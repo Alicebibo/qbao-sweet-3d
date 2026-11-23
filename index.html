@@ -28,6 +28,7 @@
   .card{position:fixed;right:20px;top:50%;transform:translate(120%,-50%);width:340px;max-width:calc(100vw - 32px);z-index:8;background:var(--cream);border-radius:26px;overflow:hidden;
     box-shadow:0 30px 60px -20px rgba(74,47,36,.55);transition:transform .45s cubic-bezier(.2,.9,.3,1.2)}
   .card.show{transform:translate(0,-50%)}
+  .card{max-height:calc(100% - 24px);overflow-y:auto;overscroll-behavior:contain}
   .card .ph{height:220px;background:radial-gradient(circle at 50% 45%,#fff,var(--pink));display:flex;align-items:center;justify-content:center}
   .card .ph{overflow:hidden}
   .card .ph img{max-height:190px;max-width:86%;filter:drop-shadow(0 12px 14px rgba(74,47,36,.3))}
@@ -58,6 +59,7 @@
     .card.photo .ph{height:250px}
     .nav button{padding:9px 11px;font-size:14px}
   }
+@media (max-height:620px){ .card .ph,.card.photo .ph{height:120px} .card .ph img{max-height:104px} .card .bd{padding:12px 18px 16px} .card .pr{font-size:32px;margin:0 0 4px} .card ul{font-size:14px;line-height:1.55} .card .order{margin-top:10px;padding-top:10px} .card .order img{width:64px;height:64px} }
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
