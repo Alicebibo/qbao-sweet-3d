@@ -18,7 +18,7 @@
   .nav button{border:0;background:transparent;font:inherit;font-weight:700;font-size:15px;color:var(--brown);padding:10px 16px;border-radius:999px;cursor:pointer;letter-spacing:1px;white-space:nowrap}
   .nav button.on,.nav button:hover{background:var(--hot);color:#fff}
   .tip{position:fixed;right:16px;top:20px;z-index:5;font-size:13px;color:#a0756a;background:rgba(255,255,255,.75);padding:6px 12px;border-radius:999px;letter-spacing:1px}
-  .pin{position:fixed;z-index:4;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;background:#fff;color:var(--brown);font-weight:700;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;
+  .pin{position:fixed;z-index:4;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;background:#fff;color:var(--brown);font-weight:700;font-size:13px;padding:4px 10px;border-radius:999px;white-space:nowrap;
     box-shadow:0 6px 16px -6px rgba(122,74,54,.55);border:2px solid var(--hot);animation:bob 1.6s ease-in-out infinite;transition:opacity .2s}
   .pin::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--hot)}
   .pin em{font-style:normal;color:var(--hot);margin-left:4px}
@@ -440,9 +440,19 @@ canvas.addEventListener('pointermove', e => {
 /* ---------- pins follow products ---------- */
 const pins = [[document.getElementById('pinT'), new THREE.Vector3(-3.4, 1.55, .0)], [document.getElementById('pinP'), new THREE.Vector3(.3, 2.55, -.1)]];
 function placePins(){
+  const show = view === 'out' && innerHeight >= 520;
+  const rects = [];
   for (const [el, w] of pins){
-    const v = w.clone().project(camera), vis = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
-    el.style.left = (v.x * .5 + .5) * innerWidth + 'px'; el.style.top = (-v.y * .5 + .5) * innerHeight + 'px'; el.style.opacity = vis && view === 'out' ? 1 : 0; el.style.pointerEvents = view === 'out' ? 'auto' : 'none';
+    const v = w.clone().project(camera), vis = show && v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
+    let x = (v.x * .5 + .5) * innerWidth, y = (-v.y * .5 + .5) * innerHeight;
+    rects.push({ el, x, y, w: el.offsetWidth, vis });
+  }
+  // keep the two labels apart: if they overlap, slide them sideways away from each other
+  const [a, b] = rects, gap = 10, need = (a.w + b.w) / 2 + gap, dx = b.x - a.x;
+  if (Math.abs(dx) < need && Math.abs(b.y - a.y) < 40){ const push = (need - Math.abs(dx)) / 2, s = dx >= 0 ? 1 : -1; a.x -= push * s; b.x += push * s; }
+  for (const r of rects){
+    r.el.style.left = r.x + 'px'; r.el.style.top = r.y + 'px';
+    r.el.style.opacity = r.vis ? 1 : 0; r.el.style.pointerEvents = r.vis ? 'auto' : 'none';
   }
 }
 
