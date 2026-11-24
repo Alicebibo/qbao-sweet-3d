@@ -461,30 +461,46 @@ function kid(){
   const hand = new THREE.Object3D(); hand.position.set(0, -.3, 0); arms[1].add(hand);
   return { g, legs, arms, head, hand };
 }
-function dog(){
-  const g = new THREE.Group(); scene.add(g);
-  const fur = mat(0xe9a25c, { roughness:.9 }), wht = mat(0xfff8f0, { roughness:.9 }), dark = mat(0x241815, { roughness:.4 });
-  const body = mesh(new THREE.CapsuleGeometry(.14, .34, 8, 16), fur, 0, .32, 0, g); body.rotation.x = Math.PI/2;
-  const chest = mesh(new THREE.SphereGeometry(.13, 20, 14), wht, 0, .29, .2, g); chest.scale.set(1, 1, .8);
+function dog(){                                             // big white bichon frise
+  const g = new THREE.Group(); g.scale.setScalar(1.5); scene.add(g);
+  const fur = mat(0xffffff, { roughness:1, emissive:0xfff6f0, emissiveIntensity:.22 }), soft = mat(0xfffaf5, { roughness:1, emissive:0xfff0e8, emissiveIntensity:.16 }), dark = mat(0x1d1513, { roughness:.35 });
+  const puff = (r, px, py, pz, parent = g, m = fur) => mesh(new THREE.SphereGeometry(r, 18, 14), m, px, py, pz, parent);
+  // fluffy body
+  const bd = puff(.2, 0, .4, 0); bd.scale.set(1.05, 1, 1.45);
+  for (let i = 0; i < 16; i++){
+    const a = i / 16 * Math.PI * 2, zz = (i % 4 - 1.5) * .1;
+    puff(.075 + (i % 3) * .015, Math.cos(a) * .17, .4 + Math.sin(a) * .16, zz, g, i % 2 ? fur : soft);
+  }
+  puff(.15, 0, .43, .2);                                     // chest
+  // puffy legs
   const legs = [];
-  for (const [lx, lz] of [[-.08, .17], [.08, .17], [-.08, -.17], [.08, -.17]]){
-    const hip = new THREE.Group(); hip.position.set(lx, .22, lz); g.add(hip);
-    mesh(new THREE.CapsuleGeometry(.045, .1, 6, 10), fur, 0, -.08, 0, hip);
-    mesh(new THREE.SphereGeometry(.05, 12, 10), wht, 0, -.16, .015, hip);
+  for (const [lx, lz] of [[-.1, .17], [.1, .17], [-.1, -.17], [.1, -.17]]){
+    const hip = new THREE.Group(); hip.position.set(lx, .28, lz); g.add(hip);
+    mesh(new THREE.CylinderGeometry(.065, .075, .2, 10), fur, 0, -.1, 0, hip);
+    puff(.08, 0, -.2, .01, hip);
     legs.push(hip);
   }
-  const head = new THREE.Group(); head.position.set(0, .52, .3); g.add(head);
-  mesh(new THREE.SphereGeometry(.15, 24, 18), fur, 0, 0, 0, head);
-  const sn = mesh(new THREE.SphereGeometry(.08, 16, 12), wht, 0, -.04, .12, head); sn.scale.set(1.1, .85, 1);
-  mesh(new THREE.SphereGeometry(.03, 10, 8), dark, 0, -.01, .2, head);
-  for (const sx of [-1, 1]){
-    const ear = mesh(new THREE.ConeGeometry(.06, .14, 12), fur, sx*.085, .14, -.01, head); ear.rotation.z = -sx*.3;
-    mesh(new THREE.SphereGeometry(.025, 10, 8), dark, sx*.065, .03, .13, head);
+  // big round head with droopy fluffy ears
+  const head = new THREE.Group(); head.position.set(0, .66, .3); g.add(head);
+  puff(.2, 0, 0, 0, head);
+  for (let i = 0; i < 10; i++){
+    const a = i / 10 * Math.PI * 2;
+    puff(.07, Math.cos(a) * .17, .05 + Math.sin(a) * .15, -.03, head, i % 2 ? fur : soft);
   }
-  const tongue = mesh(new THREE.SphereGeometry(.03, 10, 8), mat(0xff7f96), 0, -.1, .14, head); tongue.scale.set(1, .5, 1.3);
-  mesh(new THREE.TorusGeometry(.1, .022, 8, 20), mat(C.hot), 0, .43, .25, g).rotation.x = Math.PI/2 - .4;   // collar
-  const tail = mesh(new THREE.SphereGeometry(.06, 12, 10), fur, 0, .4, -.3, g);
-  const collar = new THREE.Object3D(); collar.position.set(0, .44, .28); g.add(collar);
+  puff(.1, 0, .17, 0, head);                                 // top knot
+  for (const sx of [-1, 1]){ const e = puff(.09, sx * .18, -.05, -.02, head, soft); e.scale.set(.75, 1.35, .9); }
+  const mz = puff(.085, 0, -.06, .16, head); mz.scale.set(1.15, .85, .9);       // muzzle
+  mesh(new THREE.SphereGeometry(.035, 14, 10), dark, 0, -.03, .245, head);      // nose
+  for (const sx of [-1, 1]){
+    mesh(new THREE.SphereGeometry(.03, 14, 10), dark, sx * .07, .04, .175, head);
+    mesh(new THREE.SphereGeometry(.009, 8, 6), mat(0xffffff), sx * .07 + .01, .052, .2, head);
+  }
+  const tongue = mesh(new THREE.SphereGeometry(.028, 10, 8), mat(0xff8fa3), 0, -.115, .2, head); tongue.scale.set(1, .5, 1.2);
+  mesh(new THREE.TorusGeometry(.11, .022, 8, 22), mat(C.hot), 0, .54, .25, g).rotation.x = Math.PI/2 - .5;   // collar
+  // plume tail curling over the back
+  const tail = new THREE.Group(); tail.position.set(0, .56, -.24); g.add(tail);
+  puff(.08, 0, 0, 0, tail); puff(.07, 0, .08, .05, tail); puff(.06, 0, .12, .12, tail, soft);
+  const collar = new THREE.Object3D(); collar.position.set(0, .54, .3); g.add(collar);
   return { g, legs, head, tail, collar };
 }
 const girl = kid(), pup = dog();
@@ -507,10 +523,10 @@ function animWalkers(t){
   girl.legs[0].rotation.x = sw*.55; girl.legs[1].rotation.x = -sw*.55;
   girl.arms[0].rotation.x = -sw*.5; girl.arms[1].rotation.x = -.9; girl.arms[1].rotation.z = .25;
   girl.head.rotation.z = Math.sin(t*1.5)*.06;
-  const dw = walker(pup, th + .85 / pSpeed(th), t, 12);
+  const dw = walker(pup, th + 1.15 / pSpeed(th), t, 10);
   pup.g.position.y = Math.abs(dw)*.025;
   pup.legs.forEach((l, i) => l.rotation.x = (i === 0 || i === 3 ? 1 : -1) * dw * .7);
-  pup.tail.position.x = Math.sin(t*18)*.06; pup.head.rotation.x = Math.sin(t*6)*.08;
+  pup.tail.rotation.z = Math.sin(t*14)*.35; pup.head.rotation.x = Math.sin(t*6)*.08;
   girl.hand.getWorldPosition(_a); pup.collar.getWorldPosition(_b);
   const pos = leashGeo.attributes.position, n = pos.count, sag = Math.max(0, .9 - _a.distanceTo(_b))*.3 + .08;
   for (let i = 0; i < n; i++){ const k = i/(n-1); pos.setXYZ(i, _a.x + (_b.x-_a.x)*k, _a.y + (_b.y-_a.y)*k - Math.sin(k*Math.PI)*sag, _a.z + (_b.z-_a.z)*k); }
