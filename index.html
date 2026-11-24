@@ -307,10 +307,17 @@ const menuTex = canvasTex(1024, 768, (g,w,h) => {
   g.lineWidth = 22; g.strokeStyle = '#c9956b'; rr(g,11,11,w-22,h-22,34); g.stroke();
   g.fillStyle = '#F6D6D1'; g.font = '900 86px "Noto Serif TC"'; g.textAlign = 'center'; g.fillText('MENU 價目表', w/2, 140);
   g.strokeStyle = 'rgba(246,214,209,.5)'; g.setLineDash([14,12]); g.lineWidth = 4; g.beginPath(); g.moveTo(90,180); g.lineTo(w-90,180); g.stroke(); g.setLineDash([]);
-  const row = (y, name, price) => { g.textAlign='left'; g.fillStyle='#fff'; g.font='700 70px "Noto Sans TC"'; g.fillText(name, 100, y); g.textAlign='right'; g.fillStyle='#ffd27d'; g.font='italic 600 84px "Playfair Display"'; g.fillText(price, w-100, y); };
-  row(320, '焦糖布丁', '$60'); row(460, '藍莓生乳酪塔', '$120');
-  g.textAlign='center'; g.fillStyle='#EE9098'; g.font='700 44px "Noto Sans TC"'; g.fillText('需提前預約・LINE @071ovokh', w/2, 600);
-  g.fillStyle='rgba(255,255,255,.7)'; g.font='500 36px "Noto Sans TC"'; g.fillText('塔可冷凍宅配，滿 $3,000 免運', w/2, 680);
+  const row = (y, img, name, price) => {
+    const cx = 175, r = 78;
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, y, r + 7, 0, 7); g.fill();
+    g.save(); g.beginPath(); g.arc(cx, y, r, 0, 7); g.clip(); g.fillStyle = '#fff6f2'; g.fillRect(cx-r, y-r, r*2, r*2);
+    const sc = (r*1.9) / Math.max(img.width, img.height); g.drawImage(img, cx - img.width*sc/2, y - img.height*sc/2, img.width*sc, img.height*sc); g.restore();
+    g.textBaseline = 'middle'; g.textAlign='left'; g.fillStyle='#fff'; g.font='700 64px "Noto Sans TC"'; g.fillText(name, 290, y);
+    g.textAlign='right'; g.fillStyle='#ffd27d'; g.font='italic 600 84px "Playfair Display"'; g.fillText(price, w-90, y + 4); g.textBaseline = 'alphabetic';
+  };
+  row(290, pudI, '焦糖布丁', '$60'); row(470, tartI, '藍莓生乳酪塔', '$120');
+  g.textAlign='center'; g.fillStyle='#EE9098'; g.font='700 44px "Noto Sans TC"'; g.fillText('需提前預約・LINE @071ovokh', w/2, 625);
+  g.fillStyle='rgba(255,255,255,.7)'; g.font='500 36px "Noto Sans TC"'; g.fillText('塔可冷凍宅配，滿 $3,000 免運', w/2, 692);
 });
 const menu = mesh(new THREE.PlaneGeometry(2.6, 1.95), new THREE.MeshStandardMaterial({ map:menuTex, roughness:.85, transparent:true }), 2.75, 3.05, FZ - D + T + .02, scene, false);
 menu.userData.k = 'menu';
