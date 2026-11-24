@@ -10,12 +10,12 @@
 <meta property="og:site_name" content="Q寶 Sweet">
 <meta property="og:title" content="Q寶 Sweet 3D 甜點店開幕囉！">
 <meta property="og:description" content="可旋轉逛店、切換白天夜晚｜焦糖布丁 $60・藍莓生乳酪塔 $120｜LINE 預約 @071ovokh">
-<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v4.jpg">
+<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v5.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Q寶 Sweet 3D 甜點店">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v4.jpg">
+<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v5.jpg">
 <meta name="theme-color" content="#EE9098">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
@@ -592,7 +592,7 @@ const caneCurve = new THREE.CatmullRomCurve3([[0,-.34,0],[0,-.15,0],[0,-.02,0],[
 const caneGeo = new THREE.TubeGeometry(caneCurve, 40, .025, 10, false);
 const O = {
   gold: mat(0xffd36e, { roughness:.25, metalness:.5 }), str: mat(0xf2e6d8),
-  baub: [C.hot, 0xffffff, 0xbfe3d0, 0xc9b7ff, 0xffd36e, 0xff8fa3, 0x9fd3ff].map(c => mat(c, { roughness:.18, metalness:.3 })),
+  baub: [0xff3b6b, 0xffffff, 0x2fd08a, 0xa66bff, 0xffc21f, 0xff6fae, 0x2fa8ff, 0xff5a36].map(c => mat(c, { roughness:.18, metalness:.3 })),
   cane: mat(0xffffff, { map:caneTex, roughness:.4 }), ginger: mat(0xc8844e, { roughness:.7 }), icing: mat(0xffffff, { roughness:.4 }),
   heart: mat(C.hot, { roughness:.3, metalness:.2 }), star: new THREE.MeshStandardMaterial({ color:0xffe08a, emissive:0xffc94d, emissiveIntensity:.9, roughness:.3, metalness:.3 }),
   dark: mat(0x3a2622), ball: new THREE.SphereGeometry(1, 24, 16)
@@ -615,6 +615,30 @@ const ORN = [
   o => { const h = mesh(hg, O.heart, 0, -.12, 0, o); h.scale.setScalar(.3); h.rotation.z = Math.PI; },
   o => { const s = mesh(starGeo3, O.star, 0, -.13, 0, o); s.scale.setScalar(.12); },
   o => { const c = [C.hot, 0xbfe3d0, 0xffd36e, 0xc9b7ff][(Math.random()*4)|0]; mesh(box(.17,.17,.17,.02), mat(c), 0, -.11, 0, o); mesh(new THREE.BoxGeometry(.175,.175,.03), O.icing, 0, -.11, 0, o); mesh(new THREE.BoxGeometry(.03,.175,.175), O.icing, 0, -.11, 0, o); mesh(O.ball, O.icing, 0, -.01, 0, o).scale.set(.04,.03,.04); },
+  o => { // lollipop swirl
+    const cols = [[0xff4f8b,0xffffff],[0x3fb6ff,0xffffff],[0xffc21f,0xff5b5b],[0x8ad94f,0xffffff]][(Math.random()*4)|0];
+    mesh(new THREE.CylinderGeometry(.012,.012,.12,6), O.icing, 0, -.06, 0, o);
+    const d = mesh(new THREE.CylinderGeometry(.09,.09,.04,24), mat(cols[0], { roughness:.25 }), 0, -.2, 0, o); d.rotation.x = Math.PI/2;
+    const r1 = mesh(new THREE.TorusGeometry(.055,.014,8,24), mat(cols[1], { roughness:.25 }), 0, -.2, .022, o);
+    mesh(O.ball, mat(cols[1]), 0, -.2, .025, o).scale.set(.022,.022,.01); },
+  o => { // snowman
+    mesh(O.ball, O.icing, 0, -.2, 0, o).scale.setScalar(.075); mesh(O.ball, O.icing, 0, -.09, 0, o).scale.setScalar(.055);
+    const hat = mesh(new THREE.CylinderGeometry(.035,.035,.05,14), mat(0xff3b5c), 0, -.03, 0, o); mesh(new THREE.CylinderGeometry(.05,.05,.01,14), mat(0xff3b5c), 0, -.055, 0, o);
+    for (const sx of [-1,1]) mesh(O.ball, O.dark, sx*.02, -.085, .05, o).scale.setScalar(.008);
+    const nose = mesh(new THREE.ConeGeometry(.01,.04,8), mat(0xff8a1f), 0, -.1, .06, o); nose.rotation.x = Math.PI/2;
+    const sc = mesh(new THREE.TorusGeometry(.045,.012,6,16), mat(0x3fb6ff), 0, -.135, 0, o); sc.rotation.x = Math.PI/2; },
+  o => { // macaron
+    const c = [0xff7eb3, 0x9be15d, 0xb48cff, 0xffd23f, 0x5ec8ff][(Math.random()*5)|0];
+    for (const y of [-.15, -.23]){ const h = mesh(O.ball, mat(c, { roughness:.6 }), 0, y, 0, o); h.scale.set(.085,.04,.085); }
+    mesh(new THREE.CylinderGeometry(.075,.075,.035,20), O.icing, 0, -.19, 0, o); },
+  o => { // christmas stocking
+    const c = [0xff3b5c, 0x2fbf71, 0xff7eb3][(Math.random()*3)|0];
+    mesh(box(.09,.16,.05,.02), mat(c), 0, -.13, 0, o); const f = mesh(box(.1,.06,.05,.02), mat(c), .035, -.23, 0, o);
+    mesh(box(.11,.04,.06,.015), O.icing, 0, -.045, 0, o); },
+  o => { // golden jingle bell
+    const b = mesh(new THREE.SphereGeometry(.09, 20, 14, 0, Math.PI*2, 0, Math.PI*.62), O.gold, 0, -.15, 0, o); b.material.side = THREE.DoubleSide;
+    mesh(O.ball, O.gold, 0, -.22, 0, o).scale.setScalar(.03); const bw = mesh(new THREE.TorusGeometry(.03,.01,6,12), mat(0xff3b5c), 0, -.065, 0, o); },
+  o => { teddy(0, -.33, 0, .2, 0, o); },                  // tiny hanging pink bear
 ];
 function grandTree(x, z, S = 1){
   const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(S); scene.add(g);
@@ -628,10 +652,10 @@ function grandTree(x, z, S = 1){
     const hemY = cy - h/2;
     const sn = mesh(new THREE.TorusGeometry(r * .96, .09, 10, 48), mat(0xffffff, { roughness:.6 }), 0, hemY + .06, 0, g); sn.rotation.x = Math.PI/2;
     // hanging ornaments around the hem
-    const n = Math.round(r * 5.6);
+    const n = Math.round(r * 8.5);
     for (let k = 0; k < n; k++){
       const a = k / n * Math.PI * 2 + i * .7, rr = r * .97;
-      hang(g, Math.cos(a)*rr, hemY + .02, Math.sin(a)*rr, .14 + (k % 3) * .1, ORN[(k + i) % ORN.length]);
+      hang(g, Math.cos(a)*rr, hemY + .02, Math.sin(a)*rr, .14 + (k % 3) * .1, ORN[(k * 5 + i * 3) % ORN.length]);
     }
     // plush teddies sitting on the branches
     const nb = i < 4 ? 2 : 0;
@@ -656,14 +680,28 @@ function grandTree(x, z, S = 1){
   // big glowing star on top
   const st = mesh(starGeo3, O.star, 0, 6.65, 0, g); st.scale.setScalar(.48); xStars.push(st);
   // gifts & plushies around the base
-  const gc = [[C.hot, 0xffffff, .55], [0xbfe3d0, C.hot, .45], [0xffd36e, 0xff6f7d, .5], [0xc9b7ff, 0xffffff, .4], [0xffffff, C.hot, .5], [0xff8fa3, 0xffd36e, .38]];
-  gc.forEach(([c, rb, sz], k) => {
-    const a = -1.0 + k * .55, rr = 1.75 + (k % 2) * .35, gx = Math.cos(a)*rr, gz = Math.sin(a)*rr;
-    const bg = new THREE.Group(); bg.position.set(gx, 0, gz); bg.rotation.y = a + k; g.add(bg);
-    mesh(box(sz, sz, sz, .04), mat(c), 0, sz/2, 0, bg);
-    mesh(new THREE.BoxGeometry(sz + .01, sz + .01, .07), mat(rb), 0, sz/2, 0, bg); mesh(new THREE.BoxGeometry(.07, sz + .01, sz + .01), mat(rb), 0, sz/2, 0, bg);
-    for (const s of [-1, 1]){ const b = mesh(new THREE.TorusGeometry(.08, .03, 8, 16), mat(rb), s*.07, sz + .05, 0, bg); b.rotation.y = Math.PI/2; b.rotation.z = s*.5; }
-  });
+  const GC = [[0xff3b6b,0xffd23f],[0x2fa8ff,0xffffff],[0xffc21f,0xff3b6b],[0x2fd08a,0xff3b6b],[0xa66bff,0xffd23f],[0xff6fae,0xffffff],
+              [0xff5a36,0x2fd08a],[0x00c2c7,0xff6fae],[0xffffff,0xff3b6b],[0xff3b6b,0x2fd08a],[0xffd23f,0x2fa8ff],[0x7a5cff,0xff6fae]];
+  const gift = (gx, gy, gz, sz, k, ry, h = 1) => {
+    const [c, rb] = GC[k % GC.length], cm = mat(c, { roughness:.45 }), rm = mat(rb, { roughness:.35 });
+    const bg = new THREE.Group(); bg.position.set(gx, gy, gz); bg.rotation.y = ry; g.add(bg);
+    const H = sz * h;
+    mesh(box(sz, H, sz, .04), cm, 0, H/2, 0, bg);
+    if (k % 3 === 1) for (let d = 0; d < 6; d++) mesh(O.ball, rm, (d%3 - 1)*sz*.3, H*(.3 + (d>2)*.4), sz/2 + .005, bg).scale.set(.035,.035,.01);
+    mesh(new THREE.BoxGeometry(sz + .012, H + .012, .07), rm, 0, H/2, 0, bg); mesh(new THREE.BoxGeometry(.07, H + .012, sz + .012), rm, 0, H/2, 0, bg);
+    for (const s2 of [-1, 1]){ const b = mesh(new THREE.TorusGeometry(.09, .032, 8, 16), rm, s2*.08, H + .06, 0, bg); b.rotation.y = Math.PI/2; b.rotation.z = s2*.5; }
+    mesh(O.ball, rm, 0, H + .03, 0, bg).scale.setScalar(.045);
+    return H;
+  };
+  let gk = 0;
+  for (let k = 0; k < 22; k++){
+    const a = k / 22 * Math.PI * 2 + .15, ring = k % 2, rr = 2.05 + ring * .55;
+    if (Math.abs(Math.atan2(Math.sin(a - .97), Math.cos(a - .97))) < .28 || Math.abs(Math.atan2(Math.sin(a - .26), Math.cos(a - .26))) < .25) continue;   // leave room for the bears
+    const sz = .34 + ((k * 7) % 5) * .06, h = k % 4 === 2 ? 1.5 : 1;
+    const gx = Math.cos(a)*rr, gz = Math.sin(a)*rr, ry = a + k * .6;
+    const H = gift(gx, 0, gz, sz, gk++, ry, h);
+    if (k % 3 === 0) gift(gx, H, gz, sz * .62, gk++, ry + .7);                 // little one stacked on top
+  }
   teddy(1.2, 0, 1.75, .62, .9, g);                           // pink bear hugging the presents
   const wb = teddy(2.05, 0, .55, .5, 1.5, g); wb.traverse(m => { if (m.material && m.material.color && m.material.color.getHex() === 0xf5a9bb) m.material = mat(0xffffff, { roughness:.95 }); });
   return g;
