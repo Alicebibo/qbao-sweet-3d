@@ -10,12 +10,12 @@
 <meta property="og:site_name" content="Q寶 Sweet">
 <meta property="og:title" content="Q寶 Sweet 3D 甜點店開幕囉！">
 <meta property="og:description" content="可旋轉逛店、切換白天夜晚｜焦糖布丁 $60・藍莓生乳酪塔 $120｜LINE 預約 @071ovokh">
-<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v5.jpg">
+<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v6.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Q寶 Sweet 3D 甜點店">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v5.jpg">
+<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v6.jpg">
 <meta name="theme-color" content="#EE9098">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
@@ -769,7 +769,7 @@ function go(v){
 }
 document.querySelectorAll('.nav button').forEach(b => b.onclick = () => go(b.dataset.v));
 resize(); camera.position.set(14, 9, 22); controls.target.set(0, 2, 0); go('out');
-window.go = go; window.VIEWS = VIEWS;
+window.go = go; window.VIEWS = VIEWS; window.hearts = hearts;
 
 /* ---------- product card ---------- */
 const card = document.getElementById('card');
