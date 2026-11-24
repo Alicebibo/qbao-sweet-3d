@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Q寶 Sweet 3D 甜點店</title>
+<meta name="description" content="走進 Q寶 Sweet 粉紅 3D 甜點店！可旋轉逛店、切換白天夜晚，焦糖布丁 $60、藍莓生乳酪塔 $120，歡迎 LINE 預約 @071ovokh。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://alicebibo.github.io/qbao-sweet-3d/">
+<meta property="og:site_name" content="Q寶 Sweet">
+<meta property="og:title" content="Q寶 Sweet 3D 甜點店開幕囉！">
+<meta property="og:description" content="可旋轉逛店、切換白天夜晚｜焦糖布丁 $60・藍莓生乳酪塔 $120｜LINE 預約 @071ovokh">
+<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Q寶 Sweet 3D 甜點店">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og.jpg">
+<meta name="theme-color" content="#EE9098">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 <style>
   :root{--pink:#F6D6D1;--cream:#FDF6EC;--brown:#7A4A36;--hot:#EE9098;--ink:#4a2f24}
@@ -566,6 +581,56 @@ function animWalkers(t){
   pos.needsUpdate = true;
 }
 
+/* ---------- cute decorated christmas trees ---------- */
+const xG = { tier:[0x5fb37e, 0x6cc08a, 0x7dcd98].map(c => mat(c, { roughness:.8 })), snow:mat(0xffffff, { roughness:.6 }),
+  orn:[C.hot, 0xffd36e, 0xffffff, 0xbfe3d0, 0xff6f7d, 0xc9b7ff].map(c => mat(c, { roughness:.25, metalness:.25 })),
+  bulb:[0xffd27d, 0xffb2bb, 0xbfe3d0, 0xfff1c4].map(c => new THREE.MeshStandardMaterial({ color:0xfffbe8, emissive:c, emissiveIntensity:1.1 })),
+  star:new THREE.MeshStandardMaterial({ color:0xffe08a, emissive:0xffc94d, emissiveIntensity:.9, roughness:.3, metalness:.3 }),
+  trunk:mat(0x9a6b4c), pot:mat(C.hot), ball:new THREE.SphereGeometry(1, 16, 12), bg:new THREE.SphereGeometry(1, 10, 8) };
+const starShape = new THREE.Shape(); for (let i = 0; i < 10; i++){ const r = i % 2 ? .42 : 1, a = i / 10 * Math.PI * 2 + Math.PI/2; i ? starShape.lineTo(Math.cos(a)*r, Math.sin(a)*r) : starShape.moveTo(Math.cos(a)*r, Math.sin(a)*r); }
+const starGeo3 = new THREE.ExtrudeGeometry(starShape, { depth:.35, bevelEnabled:true, bevelSize:.12, bevelThickness:.12, bevelSegments:2 }); starGeo3.center();
+const xStars = [], xInst = new Map();
+function xPut(geo, m, g, lx, ly, lz, sc){ const k = m.uuid; if (!xInst.has(k)) xInst.set(k, { geo, m, list:[] }); const s = g.scale.x; xInst.get(k).list.push([g.position.x + lx*s, g.position.y + ly*s, g.position.z + lz*s, sc*s]); }
+function xmasTree(x, z, s = 1, y = 0, gifts = true){
+  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); scene.add(g);
+  mesh(new THREE.CylinderGeometry(.34, .26, .38, 24), xG.pot, 0, .19, 0, g);
+  mesh(new THREE.CylinderGeometry(.08, .1, .4, 10), xG.trunk, 0, .5, 0, g);
+  const tiers = [[.95, .9, .6], [.75, .8, 1.15], [.52, .72, 1.65]];
+  tiers.forEach(([r, h, ty], i) => {
+    mesh(new THREE.ConeGeometry(r, h, 28), xG.tier[i], 0, ty, 0, g);
+    const sn = mesh(new THREE.TorusGeometry(r * .93, .055, 8, 32), xG.snow, 0, ty - h/2 + .05, 0, g); sn.rotation.x = Math.PI/2;   // snowy hem
+    // ornaments around the hem
+    const n = Math.round(r * 9);
+    for (let k = 0; k < n; k++){ const a = k / n * Math.PI * 2 + i, rr = r * .86; xPut(xG.ball, xG.orn[(k + i) % xG.orn.length], g, Math.cos(a)*rr, ty - h/2 + .2, Math.sin(a)*rr, .075); }
+  });
+  // spiral of fairy lights
+  for (let k = 0; k < 26; k++){
+    const t = k / 26, ty = .3 + t * 1.7, r = .9 * (1 - t) + .12, a = t * Math.PI * 7;
+    xPut(xG.bg, xG.bulb[k % xG.bulb.length], g, Math.cos(a)*r, ty, Math.sin(a)*r, .04);
+  }
+  const st = mesh(starGeo3, xG.star, 0, 2.16, 0, g); st.scale.setScalar(.17); xStars.push(st);
+  if (gifts){
+    const gc = [[C.hot, 0xffffff], [0xbfe3d0, C.hot], [0xffd36e, 0xff6f7d]];
+    gc.forEach(([c, rb], k) => {
+      const a = .6 + k * 1.15, gx = Math.cos(a) * .72, gz = Math.sin(a) * .72, sz = .26 + (k % 2) * .06;
+      const bx = mesh(box(sz, sz, sz, .03), mat(c), gx, sz/2, gz, g); bx.rotation.y = a;
+      const r1 = mesh(new THREE.BoxGeometry(sz + .01, sz + .01, .05), mat(rb), gx, sz/2, gz, g); r1.rotation.y = a;
+      const r2 = mesh(new THREE.BoxGeometry(.05, sz + .01, sz + .01), mat(rb), gx, sz/2, gz, g); r2.rotation.y = a;
+      mesh(xG.ball, mat(rb), gx, sz + .03, gz, g).scale.set(.07, .05, .07);
+    });
+  }
+  return g;
+}
+// outdoor ring (kept clear of the shop front, A-frame board, bench and the walking path)
+xmasTree(-8.0, 0.9, 1.55); xmasTree(-5.9, 8.5, 1.35); xmasTree(8.0, .2, 1.5);
+xmasTree(-4.2, -8.6, 1.6); xmasTree(0, -9.5, 1.3); xmasTree(4.2, -8.7, 1.65);
+xmasTree(-7.2, -6.2, 1.4); xmasTree(7.3, -6.3, 1.45);
+xmasTree(-9.8, -2.6, 1.1, 0, false); xmasTree(9.8, -3.4, 1.15, 0, false); xmasTree(-9.9, 3.2, 1.0, 0, false);
+// indoor trees: back-left corner next to the big bear, and back-right corner
+xmasTree(-4.45, -6.25, 1.25, .2); xmasTree(4.45, -5.9, 1.0, .2);
+{ const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), S = new THREE.Vector3();
+  xInst.forEach(({ geo, m, list }) => { const im = new THREE.InstancedMesh(geo, m, list.length); list.forEach(([x, y, z, sc], i) => im.setMatrixAt(i, M.compose(P.set(x, y, z), Q, S.set(sc, sc, sc)))); im.instanceMatrix.needsUpdate = true; scene.add(im); }); }
+
 /* ---------- day / night ---------- */
 const glowMats = [];
 scene.traverse(o => { const m = o.material; if (m && !Array.isArray(m) && m.emissive && m.emissiveIntensity > .5 && m.emissive.getHex() !== 0) glowMats.push([m, m.emissiveIntensity]); });
@@ -626,7 +691,7 @@ function go(v){
 }
 document.querySelectorAll('.nav button').forEach(b => b.onclick = () => go(b.dataset.v));
 resize(); camera.position.set(14, 9, 22); controls.target.set(0, 2, 0); go('out');
-window.go = go;
+window.go = go; window.VIEWS = VIEWS;
 
 /* ---------- product card ---------- */
 const card = document.getElementById('card');
@@ -665,6 +730,7 @@ function frame(){
   balloons.forEach((b, i) => { b.position.y += Math.sin(t*1.6 + i) * .002; b.rotation.z = Math.sin(t + i) * .08; });
   hearts.forEach(h => { h.position.y += Math.sin(t*.8 + h.userData.p) * .004; h.rotation.y = t*.6 + h.userData.p; });
   animWalkers(t);
+  xStars.forEach((st, i) => st.rotation.y = t * 1.2 + i);
   if (Math.abs(night - nightTarget) > .001){ night += Math.sign(nightTarget - night) * Math.min(Math.abs(nightTarget - night), dt / 1.2); applyNight(night); }
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(frame);
