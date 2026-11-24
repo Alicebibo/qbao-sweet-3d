@@ -152,11 +152,11 @@ const grass = mesh(new THREE.RingGeometry(10.6, 12.6, 96), mat(0xcfe6c4), 0, .01
 
 /* ---------- building ---------- */
 const shop = new THREE.Group(); scene.add(shop);
-const W = 9, D = 6, H = 4.6, T = .25, FZ = 2;               // front face at z = FZ
+const W = 11, D = 9, H = 4.6, T = .25, FZ = 2;               // front face at z = FZ
 const wallM = mat(C.cream), trimM = mat(C.brown, { roughness:.6 }), pinkM = mat(C.pink), hotM = mat(C.hot);
 // floor (checker tiles)
 const floorTex = canvasTex(512, 512, (g,w,h) => { const s = 64; for (let y=0;y<h;y+=s) for (let x=0;x<w;x+=s){ g.fillStyle = ((x+y)/s)%2 ? '#fff7f1' : '#f2c9c3'; g.fillRect(x,y,s,s);} });
-floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(3, 2);
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(W/3, D/3);
 mesh(box(W, .2, D, .04), [mat(C.brown), mat(C.brown), mat(0xffffff,{map:floorTex,roughness:.5}), mat(C.brown), mat(C.brown), mat(C.brown)], 0, .1, FZ - D/2);
 // back + sides
 const interiorWall = canvasTex(512, 512, (g,w,h) => {
@@ -165,7 +165,7 @@ const interiorWall = canvasTex(512, 512, (g,w,h) => {
   g.fillStyle = '#e9b8ae'; g.fillRect(0, h*.68, w, 6);
   g.fillStyle = '#f4cfc7'; g.fillRect(0, h*.68+6, w, h);
 });
-interiorWall.wrapS = THREE.RepeatWrapping; interiorWall.repeat.set(4, 1);
+interiorWall.wrapS = THREE.RepeatWrapping; interiorWall.repeat.set(5, 1);
 const inWallM = mat(0xffffff, { map:interiorWall });
 mesh(box(W, H, T, .03), inWallM, 0, H/2 + .2, FZ - D + T/2);
 for (const sx of [-1, 1]) mesh(box(T, H, D, .03), [wallM, inWallM, wallM, wallM, wallM, wallM].map((m,i)=> i===(sx>0?1:0)?inWallM:wallM), sx*(W/2 - T/2), H/2 + .2, FZ - D/2);
@@ -173,8 +173,8 @@ for (const sx of [-1, 1]) mesh(box(T, H, D, .03), [wallM, inWallM, wallM, wallM,
 mesh(box(W + .5, .35, D + .5, .08), mat(0xfff9f4), 0, H + .38, FZ - D/2);
 mesh(box(W + .7, .18, D + .7, .06), pinkM, 0, H + .64, FZ - D/2);
 // scalloped cornice along the front
-for (let i = 0; i < 18; i++){
-  const s = mesh(new THREE.SphereGeometry(.26, 20, 12, 0, Math.PI*2, 0, Math.PI/2), i%2 ? pinkM : hotM, -W/2 - .1 + (i + .5) * (W + .2)/18, H + .2, FZ + .26);
+for (let i = 0; i < 22; i++){
+  const s = mesh(new THREE.SphereGeometry(.26, 20, 12, 0, Math.PI*2, 0, Math.PI/2), i%2 ? pinkM : hotM, -W/2 - .1 + (i + .5) * (W + .2)/22, H + .2, FZ + .26);
   s.rotation.x = Math.PI; s.scale.z = .5;
 }
 // front facade with window (left) & door (right)
@@ -312,19 +312,19 @@ const menuTex = canvasTex(1024, 768, (g,w,h) => {
   g.textAlign='center'; g.fillStyle='#EE9098'; g.font='700 44px "Noto Sans TC"'; g.fillText('需提前預約・LINE @071ovokh', w/2, 600);
   g.fillStyle='rgba(255,255,255,.7)'; g.font='500 36px "Noto Sans TC"'; g.fillText('塔可冷凍宅配，滿 $3,000 免運', w/2, 680);
 });
-const menu = mesh(new THREE.PlaneGeometry(2.6, 1.95), new THREE.MeshStandardMaterial({ map:menuTex, roughness:.85 }), 2.75, 3.05, FZ - D + T + .02, scene, false);
+const menu = mesh(new THREE.PlaneGeometry(2.6, 1.95), new THREE.MeshStandardMaterial({ map:menuTex, roughness:.85, transparent:true }), 2.75, 3.05, FZ - D + T + .02, scene, false);
 menu.userData.k = 'menu';
 
 // logo plaque on the left back wall
-const plaque = mesh(new THREE.CircleGeometry(.75, 48), new THREE.MeshStandardMaterial({ map:new THREE.CanvasTexture((()=>{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#fff';g.beginPath();g.arc(256,256,256,0,7);g.fill();g.drawImage(logoI,16,16,480,480);return c;})()) }), -W/2 + T + .02, 3.3, -1.2, scene, false);
+const plaque = mesh(new THREE.CircleGeometry(.75, 48), new THREE.MeshStandardMaterial({ map:new THREE.CanvasTexture((()=>{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#fff';g.beginPath();g.arc(256,256,256,0,7);g.fill();g.drawImage(logoI,16,16,480,480);return c;})()) }), -W/2 + T + .02, 3.3, -3.2, scene, false);
 plaque.rotation.y = Math.PI/2; plaque.material.map.colorSpace = THREE.SRGBColorSpace;
 
 // pendant lamps
-for (const x of [-2.6, -.6, 1.6]){
-  mesh(new THREE.CylinderGeometry(.012,.012,1.2,6), trimM, x, H - .4, -.4);
-  const sh = mesh(new THREE.ConeGeometry(.32, .3, 32, 1, true), mat(C.hot, { side:THREE.DoubleSide }), x, H - 1.1, -.4);
-  mesh(new THREE.SphereGeometry(.1, 16, 12), new THREE.MeshBasicMaterial({ color:0xfff3cf }), x, H - 1.25, -.4, scene, false);
-  const pl = new THREE.PointLight(0xffd9a8, 6, 5, 1.6); pl.position.set(x, H - 1.35, -.4); scene.add(pl);
+for (const [x, z] of [[-2.6, -.4], [-.6, -.4], [1.6, -.4], [-2.2, -3.8], [1.4, -3.8]]){
+  mesh(new THREE.CylinderGeometry(.012,.012,1.2,6), trimM, x, H - .4, z);
+  const sh = mesh(new THREE.ConeGeometry(.32, .3, 32, 1, true), mat(C.hot, { side:THREE.DoubleSide }), x, H - 1.1, z);
+  mesh(new THREE.SphereGeometry(.1, 16, 12), new THREE.MeshBasicMaterial({ color:0xfff3cf }), x, H - 1.25, z, scene, false);
+  const pl = new THREE.PointLight(0xffd9a8, 6, 6, 1.6); pl.position.set(x, H - 1.35, z); scene.add(pl);
 }
 // table & chairs inside by the door
 function tableSet(x, z){
@@ -334,7 +334,7 @@ function tableSet(x, z){
     mesh(new THREE.CylinderGeometry(.24,.24,.08,24), mat(C.hot), cx, .7, cz); mesh(new THREE.CylinderGeometry(.03,.03,.5,8), trimM, cx, .43, cz); }
   plate(scene, x - .1, 1.03, z, .2); tart(scene, x - .1, 1.06, z, .16, 1);
 }
-tableSet(1.9, -1.7);
+tableSet(2.6, -1.8); tableSet(0.4, -4.0);
 
 /* ---------- outside ---------- */
 // A-frame chalk board
@@ -368,15 +368,15 @@ for (let i=0;i<3;i++) mesh(box(1.8,.08,.16,.03), mat(C.wood), 0, .55, -.2 + i*.2
 for (let i=0;i<2;i++) mesh(box(1.8,.08,.14,.03), mat(C.wood), 0, .85 + i*.2, -.33, bench);
 for (const sx of [-.75,.75]){ mesh(box(.08,.55,.5,.02), trimM, sx, .28, 0, bench); mesh(box(.08,.6,.06,.02), trimM, sx, .85, -.35, bench); }
 // street lamp
-mesh(new THREE.CylinderGeometry(.07,.1,3.4,12), trimM, 5.6, 1.7, FZ + 1.4);
-mesh(new THREE.SphereGeometry(.3, 20, 16), new THREE.MeshStandardMaterial({ color:0xfff4d6, emissive:0xffe2a8, emissiveIntensity:.8 }), 5.6, 3.55, FZ + 1.4);
+mesh(new THREE.CylinderGeometry(.07,.1,3.4,12), trimM, 6.9, 1.7, FZ + 1.6);
+mesh(new THREE.SphereGeometry(.3, 20, 16), new THREE.MeshStandardMaterial({ color:0xfff4d6, emissive:0xffe2a8, emissiveIntensity:.8 }), 6.9, 3.55, FZ + 1.6);
 // round trees
 function tree(x, z, s = 1){
   mesh(new THREE.CylinderGeometry(.12*s,.16*s,1.2*s,10), mat(0xa77a5a), x, .6*s, z);
   mesh(new THREE.IcosahedronGeometry(.9*s, 1), mat(0xa9d6a0, { flatShading:true }), x, 1.7*s, z);
   mesh(new THREE.IcosahedronGeometry(.6*s, 1), mat(0x93c98d, { flatShading:true }), x + .4*s, 1.4*s, z + .3*s);
 }
-tree(-7.5, -2.5, 1.2); tree(7.6, -1.6, 1.1); tree(-8.4, 3.5, .9); tree(8.2, 4.2, .8);
+tree(-8.0, -3.5, 1.2); tree(8.1, -2.6, 1.1); tree(-8.4, 3.5, .9); tree(8.2, 4.2, .8);
 // balloons by the door
 const balloons = [];
 for (let i=0;i<3;i++){
@@ -386,8 +386,8 @@ for (let i=0;i<3;i++){
   scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color:0xffffff })));
 }
 // string lights along the cornice
-for (let i=0;i<22;i++){
-  const x = -W/2 + (i+.5)*W/22, y = H + .05 - Math.sin((i%11)/10*Math.PI)*.18;
+for (let i=0;i<26;i++){
+  const x = -W/2 + (i+.5)*W/26, y = H + .05 - Math.sin((i%13)/12*Math.PI)*.18;
   mesh(new THREE.SphereGeometry(.06,10,8), new THREE.MeshStandardMaterial({ color:0xfff1c4, emissive:[0xffd27d,0xffb2bb,0xbfe3d0][i%3], emissiveIntensity:1.2 }), x, y, FZ + .45, scene, false);
 }
 // floating hearts
@@ -396,12 +396,132 @@ const hs = new THREE.Shape(); hs.moveTo(0,.25); hs.bezierCurveTo(0,.3,-.05,.4,-.
 const hg = new THREE.ExtrudeGeometry(hs, { depth:.1, bevelEnabled:true, bevelSize:.04, bevelThickness:.04, bevelSegments:3 }); hg.center();
 for (let i=0;i<7;i++){ const h = mesh(hg, mat(i%2 ? C.hot : 0xffc2cb, { roughness:.4 }), (Math.random()-.5)*14, 5 + Math.random()*2.5, (Math.random()-.5)*10 - 1, scene, false); h.scale.setScalar(.5 + Math.random()*.5); h.rotation.z = Math.PI; h.userData.p = Math.random()*6; hearts.push(h); }
 
+/* ---------- pink teddy bears ---------- */
+function teddy(x, y, z, s = 1, ry = 0, parent = scene){
+  const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; g.scale.setScalar(s); parent.add(g);
+  const fur = mat(0xf5a9bb, { roughness:.95 }), lite = mat(0xffe1e8, { roughness:.9 }), dark = mat(0x3a2622, { roughness:.4 });
+  const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const o = mesh(new THREE.SphereGeometry(r, 28, 20), m, px, py, pz, g); o.scale.set(sx, sy, sz); return o; };
+  sp(.5, fur, 0, .55, 0, 1, 1.08, .9);                       // body
+  sp(.32, lite, 0, .52, .24, 1, 1.1, .6);                    // belly
+  for (const sx of [-1, 1]){
+    const leg = mesh(new THREE.CapsuleGeometry(.15, .28, 8, 16), fur, sx*.26, .2, .3, g); leg.rotation.x = Math.PI/2;
+    sp(.14, lite, sx*.26, .2, .52, 1, 1, .35);               // foot pad
+    const arm = mesh(new THREE.CapsuleGeometry(.12, .3, 8, 16), fur, sx*.48, .62, .12, g); arm.rotation.set(-.5, 0, sx*.55);
+  }
+  sp(.42, fur, 0, 1.32, .02);                                // head
+  sp(.18, lite, 0, 1.24, .36, 1.1, .85, .75);                // muzzle
+  sp(.06, dark, 0, 1.3, .5, 1.2, .85, .8);                   // nose
+  for (const sx of [-1, 1]){
+    sp(.05, dark, sx*.15, 1.42, .37);                        // eyes
+    sp(.035, mat(0xffffff), sx*.15 + .015, 1.44, .41);
+    sp(.07, mat(0xff8fa8, { roughness:.9 }), sx*.27, 1.24, .3, 1, .6, .4);   // blush
+    sp(.15, fur, sx*.3, 1.66, -.02, 1, 1, .6);               // ears
+    sp(.09, lite, sx*.3, 1.66, .05, 1, 1, .4);
+  }
+  const bow = mat(0xffffff, { roughness:.5 });               // ribbon bow
+  for (const sx of [-1, 1]){ const b = mesh(new THREE.ConeGeometry(.11, .22, 16), bow, sx*.12, .96, .3, g); b.rotation.z = sx*Math.PI/2; }
+  sp(.05, bow, 0, .96, .32);
+  return g;
+}
+teddy(-3.6, .2, -4.6, 1.35, .55);                            // big bear in the corner
+teddy(0.4, .78, -4.8, .55, 0);                               // bear on the chair
+teddy(-.35, 2.63, -.1, .28, .3, cs);                         // mini bear on the case
+
+/* ---------- kid walking a dog ---------- */
+function kid(){
+  const g = new THREE.Group(); scene.add(g);
+  const skin = mat(0xffdcc8, { roughness:.8 }), hair = mat(0x6b4330, { roughness:.7 }), dress = mat(C.hot, { roughness:.7 }), dark = mat(0x2b1d1a, { roughness:.4 });
+  const legs = [], arms = [];
+  for (const sx of [-1, 1]){
+    const hip = new THREE.Group(); hip.position.set(sx*.08, .42, 0); g.add(hip);
+    mesh(new THREE.CapsuleGeometry(.055, .26, 6, 12), skin, 0, -.2, 0, hip);
+    const sh = mesh(new THREE.SphereGeometry(.075, 16, 12), mat(0xffffff, { roughness:.5 }), 0, -.37, .03, hip); sh.scale.set(1, .7, 1.4);
+    legs.push(hip);
+  }
+  mesh(new THREE.CylinderGeometry(.13, .29, .42, 28), dress, 0, .6, 0, g);          // skirt
+  mesh(new THREE.CylinderGeometry(.12, .14, .22, 24), dress, 0, .9, 0, g);          // top
+  mesh(new THREE.TorusGeometry(.12, .025, 8, 24), mat(0xffffff), 0, 1.0, 0, g).rotation.x = Math.PI/2;   // collar
+  for (const sx of [-1, 1]){
+    const sho = new THREE.Group(); sho.position.set(sx*.16, .97, 0); g.add(sho);
+    mesh(new THREE.CapsuleGeometry(.045, .24, 6, 12), skin, 0, -.15, 0, sho);
+    arms.push(sho);
+  }
+  const head = new THREE.Group(); head.position.y = 1.27; g.add(head);
+  mesh(new THREE.SphereGeometry(.27, 32, 24), skin, 0, 0, 0, head);
+  const cap = mesh(new THREE.SphereGeometry(.29, 32, 20, 0, Math.PI*2, 0, Math.PI*.55), hair, 0, .01, -.02, head); cap.rotation.x = -.35;
+  for (const sx of [-1, 1]){
+    mesh(new THREE.SphereGeometry(.11, 20, 16), hair, sx*.24, .14, -.04, head);                       // buns
+    const r = mesh(new THREE.TorusGeometry(.06, .025, 8, 16), mat(0xffffff), sx*.3, .2, -.04, head); r.rotation.y = Math.PI/2;
+    mesh(new THREE.SphereGeometry(.035, 12, 10), dark, sx*.095, -.01, .245, head);                     // eyes
+    mesh(new THREE.SphereGeometry(.012, 8, 6), mat(0xffffff), sx*.095 + .012, .005, .275, head);
+    const bl = mesh(new THREE.SphereGeometry(.045, 12, 10), mat(0xff9fb0), sx*.16, -.08, .22, head); bl.scale.set(1, .6, .4);
+  }
+  const mouth = mesh(new THREE.TorusGeometry(.035, .01, 6, 16, Math.PI), mat(0xd9576f), 0, -.1, .26, head); mouth.rotation.z = Math.PI;
+  const hand = new THREE.Object3D(); hand.position.set(0, -.3, 0); arms[1].add(hand);
+  return { g, legs, arms, head, hand };
+}
+function dog(){
+  const g = new THREE.Group(); scene.add(g);
+  const fur = mat(0xe9a25c, { roughness:.9 }), wht = mat(0xfff8f0, { roughness:.9 }), dark = mat(0x241815, { roughness:.4 });
+  const body = mesh(new THREE.CapsuleGeometry(.14, .34, 8, 16), fur, 0, .32, 0, g); body.rotation.x = Math.PI/2;
+  const chest = mesh(new THREE.SphereGeometry(.13, 20, 14), wht, 0, .29, .2, g); chest.scale.set(1, 1, .8);
+  const legs = [];
+  for (const [lx, lz] of [[-.08, .17], [.08, .17], [-.08, -.17], [.08, -.17]]){
+    const hip = new THREE.Group(); hip.position.set(lx, .22, lz); g.add(hip);
+    mesh(new THREE.CapsuleGeometry(.045, .1, 6, 10), fur, 0, -.08, 0, hip);
+    mesh(new THREE.SphereGeometry(.05, 12, 10), wht, 0, -.16, .015, hip);
+    legs.push(hip);
+  }
+  const head = new THREE.Group(); head.position.set(0, .52, .3); g.add(head);
+  mesh(new THREE.SphereGeometry(.15, 24, 18), fur, 0, 0, 0, head);
+  const sn = mesh(new THREE.SphereGeometry(.08, 16, 12), wht, 0, -.04, .12, head); sn.scale.set(1.1, .85, 1);
+  mesh(new THREE.SphereGeometry(.03, 10, 8), dark, 0, -.01, .2, head);
+  for (const sx of [-1, 1]){
+    const ear = mesh(new THREE.ConeGeometry(.06, .14, 12), fur, sx*.085, .14, -.01, head); ear.rotation.z = -sx*.3;
+    mesh(new THREE.SphereGeometry(.025, 10, 8), dark, sx*.065, .03, .13, head);
+  }
+  const tongue = mesh(new THREE.SphereGeometry(.03, 10, 8), mat(0xff7f96), 0, -.1, .14, head); tongue.scale.set(1, .5, 1.3);
+  mesh(new THREE.TorusGeometry(.1, .022, 8, 20), mat(C.hot), 0, .43, .25, g).rotation.x = Math.PI/2 - .4;   // collar
+  const tail = mesh(new THREE.SphereGeometry(.06, 12, 10), fur, 0, .4, -.3, g);
+  const collar = new THREE.Object3D(); collar.position.set(0, .44, .28); g.add(collar);
+  return { g, legs, head, tail, collar };
+}
+const girl = kid(), pup = dog();
+const leashGeo = new THREE.BufferGeometry().setFromPoints(Array.from({ length:12 }, () => new THREE.Vector3()));
+const leash = new THREE.Line(leashGeo, new THREE.LineBasicMaterial({ color:0xd9576f })); leash.frustumCulled = false; scene.add(leash);
+const PATH = { cx:.2, cz:FZ + 4.4, rx:4.6, rz:1.1 };
+const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+function walker(o, th, t, ph){
+  o.g.position.set(PATH.cx + PATH.rx*Math.cos(th), 0, PATH.cz + PATH.rz*Math.sin(th));
+  o.g.rotation.y = Math.atan2(-PATH.rx*Math.sin(th), PATH.rz*Math.cos(th));
+  return Math.sin(t*ph);
+}
+let wTh = 2.2, wLast = 0;
+const pSpeed = th => Math.hypot(PATH.rx*Math.sin(th), PATH.rz*Math.cos(th));
+function animWalkers(t){
+  const dt = Math.min(.05, t - wLast); wLast = t;
+  wTh += .55*dt / pSpeed(wTh); const th = wTh;
+  const sw = walker(girl, th, t, 7.5);
+  girl.g.position.y = Math.abs(sw)*.03;
+  girl.legs[0].rotation.x = sw*.55; girl.legs[1].rotation.x = -sw*.55;
+  girl.arms[0].rotation.x = -sw*.5; girl.arms[1].rotation.x = -.9; girl.arms[1].rotation.z = .25;
+  girl.head.rotation.z = Math.sin(t*1.5)*.06;
+  const dw = walker(pup, th + .85 / pSpeed(th), t, 12);
+  pup.g.position.y = Math.abs(dw)*.025;
+  pup.legs.forEach((l, i) => l.rotation.x = (i === 0 || i === 3 ? 1 : -1) * dw * .7);
+  pup.tail.position.x = Math.sin(t*18)*.06; pup.head.rotation.x = Math.sin(t*6)*.08;
+  girl.hand.getWorldPosition(_a); pup.collar.getWorldPosition(_b);
+  const pos = leashGeo.attributes.position, n = pos.count, sag = Math.max(0, .9 - _a.distanceTo(_b))*.3 + .08;
+  for (let i = 0; i < n; i++){ const k = i/(n-1); pos.setXYZ(i, _a.x + (_b.x-_a.x)*k, _a.y + (_b.y-_a.y)*k - Math.sin(k*Math.PI)*sag, _a.z + (_b.z-_a.z)*k); }
+  pos.needsUpdate = true;
+}
+
 /* ---------- views ---------- */
 const VIEWS = {
-  out:  { pos:[9, 6.5, 15], tgt:[0, 2.2, 0] },
-  in:   { pos:[3.3, 2.5, 1.2], tgt:[-1.2, 1.8, -1.6] },
+  out:  { pos:[10.5, 7, 16.5], tgt:[0, 2.0, -.5] },
+  in:   { pos:[4.6, 3.1, -0.4], tgt:[-1.8, 1.4, -3.9] },
   case: { pos:[-0.55, 2.45, 2.75], tgt:[-1.75, 1.6, -.2] },
-  menu: { pos:[2.75, 3.0, 0.4], tgt:[2.75, 3.0, -3.8] },
+  menu: { pos:[2.75, 3.0, -2.6], tgt:[2.75, 3.0, -6.8] },
 };
 let tween = null, view = 'out';
 function go(v){
@@ -409,7 +529,7 @@ function go(v){
   document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   controls.autoRotate = v === 'out'; view = v;
   const t1 = new THREE.Vector3(...V.tgt), p1 = new THREE.Vector3(...V.pos);
-  if (innerWidth < 640 && v === 'out') p1.sub(t1).multiplyScalar(1.55).add(t1);
+  if (innerWidth < 640 && v === 'out'){ t1.x += 1.2; p1.sub(t1).multiplyScalar(1.95).add(t1); }
   tween = { t:0, p0:camera.position.clone(), t0:controls.target.clone(), p1, t1 };
   controls.minDistance = v === 'out' ? 3 : .6;
 }
@@ -453,6 +573,7 @@ function frame(){
   }
   balloons.forEach((b, i) => { b.position.y += Math.sin(t*1.6 + i) * .002; b.rotation.z = Math.sin(t + i) * .08; });
   hearts.forEach(h => { h.position.y += Math.sin(t*.8 + h.userData.p) * .004; h.rotation.y = t*.6 + h.userData.p; });
+  animWalkers(t);
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
