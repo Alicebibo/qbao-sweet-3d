@@ -10,12 +10,12 @@
 <meta property="og:site_name" content="Q寶 Sweet">
 <meta property="og:title" content="Q寶 Sweet 3D 甜點店開幕囉！">
 <meta property="og:description" content="可旋轉逛店、切換白天夜晚｜焦糖布丁 $60・藍莓生乳酪塔 $120｜LINE 預約 @071ovokh">
-<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v3.jpg">
+<meta property="og:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v4.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Q寶 Sweet 3D 甜點店">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v3.jpg">
+<meta name="twitter:image" content="https://alicebibo.github.io/qbao-sweet-3d/og-v4.jpg">
 <meta name="theme-color" content="#EE9098">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
@@ -668,7 +668,7 @@ function grandTree(x, z, S = 1){
   const wb = teddy(2.05, 0, .55, .5, 1.5, g); wb.traverse(m => { if (m.material && m.material.color && m.material.color.getHex() === 0xf5a9bb) m.material = mat(0xffffff, { roughness:.95 }); });
   return g;
 }
-grandTree(8.0, -5.6, 1.35);
+window.bigTree = grandTree(8.0, -5.6, 1.35);
 
 /* ---------- day / night ---------- */
 const glowMats = [];
