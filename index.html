@@ -420,7 +420,7 @@ function tree(x, z, s = 1){
   mesh(new THREE.IcosahedronGeometry(.9*s, 1), mat(0xa9d6a0, { flatShading:true }), x, 1.7*s, z);
   mesh(new THREE.IcosahedronGeometry(.6*s, 1), mat(0x93c98d, { flatShading:true }), x + .4*s, 1.4*s, z + .3*s);
 }
-tree(-8.0, -3.5, 1.2); tree(8.1, -2.6, 1.1); tree(-9.0, 5.6, .9); tree(8.2, 4.2, .8);
+tree(-8.0, -3.5, 1.2); tree(-9.0, 5.6, .9); tree(8.2, 4.2, .8);
 // balloons by the door
 const balloons = [];
 for (let i=0;i<3;i++){
@@ -581,55 +581,92 @@ function animWalkers(t){
   pos.needsUpdate = true;
 }
 
-/* ---------- cute decorated christmas trees ---------- */
-const xG = { tier:[0x5fb37e, 0x6cc08a, 0x7dcd98].map(c => mat(c, { roughness:.8 })), snow:mat(0xffffff, { roughness:.6 }),
-  orn:[C.hot, 0xffd36e, 0xffffff, 0xbfe3d0, 0xff6f7d, 0xc9b7ff].map(c => mat(c, { roughness:.25, metalness:.25 })),
-  bulb:[0xffd27d, 0xffb2bb, 0xbfe3d0, 0xfff1c4].map(c => new THREE.MeshStandardMaterial({ color:0xfffbe8, emissive:c, emissiveIntensity:1.1 })),
-  star:new THREE.MeshStandardMaterial({ color:0xffe08a, emissive:0xffc94d, emissiveIntensity:.9, roughness:.3, metalness:.3 }),
-  trunk:mat(0x9a6b4c), pot:mat(C.hot), ball:new THREE.SphereGeometry(1, 16, 12), bg:new THREE.SphereGeometry(1, 10, 8) };
-const starShape = new THREE.Shape(); for (let i = 0; i < 10; i++){ const r = i % 2 ? .42 : 1, a = i / 10 * Math.PI * 2 + Math.PI/2; i ? starShape.lineTo(Math.cos(a)*r, Math.sin(a)*r) : starShape.moveTo(Math.cos(a)*r, Math.sin(a)*r); }
-const starGeo3 = new THREE.ExtrudeGeometry(starShape, { depth:.35, bevelEnabled:true, bevelSize:.12, bevelThickness:.12, bevelSegments:2 }); starGeo3.center();
-const xStars = [], xInst = new Map();
-function xPut(geo, m, g, lx, ly, lz, sc){ const k = m.uuid; if (!xInst.has(k)) xInst.set(k, { geo, m, list:[] }); const s = g.scale.x; xInst.get(k).list.push([g.position.x + lx*s, g.position.y + ly*s, g.position.z + lz*s, sc*s]); }
-function xmasTree(x, z, s = 1, y = 0, gifts = true){
-  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); scene.add(g);
-  mesh(new THREE.CylinderGeometry(.34, .26, .38, 24), xG.pot, 0, .19, 0, g);
-  mesh(new THREE.CylinderGeometry(.08, .1, .4, 10), xG.trunk, 0, .5, 0, g);
-  const tiers = [[.95, .9, .6], [.75, .8, 1.15], [.52, .72, 1.65]];
-  tiers.forEach(([r, h, ty], i) => {
-    mesh(new THREE.ConeGeometry(r, h, 28), xG.tier[i], 0, ty, 0, g);
-    const sn = mesh(new THREE.TorusGeometry(r * .93, .055, 8, 32), xG.snow, 0, ty - h/2 + .05, 0, g); sn.rotation.x = Math.PI/2;   // snowy hem
-    // ornaments around the hem
-    const n = Math.round(r * 9);
-    for (let k = 0; k < n; k++){ const a = k / n * Math.PI * 2 + i, rr = r * .86; xPut(xG.ball, xG.orn[(k + i) % xG.orn.length], g, Math.cos(a)*rr, ty - h/2 + .2, Math.sin(a)*rr, .075); }
+/* ---------- one grand christmas tree with cute hanging ornaments & plushies ---------- */
+const xStars = [], swingers = [];
+const starShape = new THREE.Shape(); for (let i = 0; i < 10; i++){ const r = i % 2 ? .45 : 1, a = i / 10 * Math.PI * 2 + Math.PI/2; i ? starShape.lineTo(Math.cos(a)*r, Math.sin(a)*r) : starShape.moveTo(Math.cos(a)*r, Math.sin(a)*r); }
+const starGeo3 = new THREE.ExtrudeGeometry(starShape, { depth:.3, bevelEnabled:true, bevelSize:.12, bevelThickness:.12, bevelSegments:3 }); starGeo3.center();
+const caneTex = canvasTex(64, 256, (g,w,h) => { g.fillStyle = '#fff'; g.fillRect(0,0,w,h); g.fillStyle = '#ff6f84'; for (let y = -w; y < h + w; y += 40){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y+w*.6); g.lineTo(w,y+w*.6+16); g.lineTo(0,y+16); g.fill(); } });
+caneTex.wrapS = caneTex.wrapT = THREE.RepeatWrapping; caneTex.repeat.set(1, 3);
+const caneCurve = new THREE.CatmullRomCurve3([[0,-.34,0],[0,-.15,0],[0,-.02,0],[.03,.05,0],[.09,.06,0],[.12,0,0],[.12,-.05,0]].map(p => new THREE.Vector3(...p)));
+const caneGeo = new THREE.TubeGeometry(caneCurve, 40, .025, 10, false);
+const O = {
+  gold: mat(0xffd36e, { roughness:.25, metalness:.5 }), str: mat(0xf2e6d8),
+  baub: [C.hot, 0xffffff, 0xbfe3d0, 0xc9b7ff, 0xffd36e, 0xff8fa3, 0x9fd3ff].map(c => mat(c, { roughness:.18, metalness:.3 })),
+  cane: mat(0xffffff, { map:caneTex, roughness:.4 }), ginger: mat(0xc8844e, { roughness:.7 }), icing: mat(0xffffff, { roughness:.4 }),
+  heart: mat(C.hot, { roughness:.3, metalness:.2 }), star: new THREE.MeshStandardMaterial({ color:0xffe08a, emissive:0xffc94d, emissiveIntensity:.9, roughness:.3, metalness:.3 }),
+  dark: mat(0x3a2622), ball: new THREE.SphereGeometry(1, 24, 16)
+};
+function hang(parent, x, y, z, len, build){            // pivot at the branch, ornament dangling below
+  const pv = new THREE.Group(); pv.position.set(x, y, z); parent.add(pv);
+  mesh(new THREE.CylinderGeometry(.006, .006, len, 4), O.str, 0, -len/2, 0, pv, false);
+  const o = new THREE.Group(); o.position.y = -len; o.scale.setScalar(1.75); pv.add(o); build(o);
+  pv.userData.p = Math.random() * 6; swingers.push(pv); return pv;
+}
+const ORN = [
+  o => { mesh(O.ball, O.baub[(Math.random()*O.baub.length)|0], 0, -.13, 0, o).scale.setScalar(.13); mesh(new THREE.CylinderGeometry(.035,.035,.05,12), O.gold, 0, -.01, 0, o); },
+  o => { const c = mesh(caneGeo, O.cane, 0, .0, 0, o); c.position.y = -.06; c.rotation.y = Math.random()*6; },
+  o => { // gingerbread man
+    const g = O.ginger; mesh(O.ball, g, 0, -.07, 0, o).scale.set(.06,.06,.03); mesh(O.ball, g, 0, -.17, 0, o).scale.set(.065,.08,.03);
+    for (const s of [-1,1]){ const a = mesh(O.ball, g, s*.07, -.15, 0, o); a.scale.set(.04,.025,.025); const l = mesh(O.ball, g, s*.035, -.26, 0, o); l.scale.set(.028,.045,.025);
+      mesh(O.ball, O.dark, s*.02, -.06, .028, o).scale.setScalar(.009); }
+    mesh(O.ball, O.icing, 0, -.15, .03, o).scale.setScalar(.012); mesh(O.ball, O.icing, 0, -.19, .03, o).scale.setScalar(.012);
+    mesh(new THREE.TorusGeometry(.018,.004,6,12,Math.PI), O.icing, 0, -.085, .029, o).rotation.z = Math.PI; },
+  o => { const h = mesh(hg, O.heart, 0, -.12, 0, o); h.scale.setScalar(.3); h.rotation.z = Math.PI; },
+  o => { const s = mesh(starGeo3, O.star, 0, -.13, 0, o); s.scale.setScalar(.12); },
+  o => { const c = [C.hot, 0xbfe3d0, 0xffd36e, 0xc9b7ff][(Math.random()*4)|0]; mesh(box(.17,.17,.17,.02), mat(c), 0, -.11, 0, o); mesh(new THREE.BoxGeometry(.175,.175,.03), O.icing, 0, -.11, 0, o); mesh(new THREE.BoxGeometry(.03,.175,.175), O.icing, 0, -.11, 0, o); mesh(O.ball, O.icing, 0, -.01, 0, o).scale.set(.04,.03,.04); },
+];
+function grandTree(x, z){
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  const skirt = mesh(new THREE.CylinderGeometry(2.6, 2.7, .06, 48), mat(0xffd9df), 0, .03, 0, g);
+  const skirtRim = mesh(new THREE.TorusGeometry(2.62, .07, 10, 64), mat(0xffffff), 0, .07, 0, g); skirtRim.rotation.x = Math.PI/2;
+  mesh(new THREE.CylinderGeometry(.28, .36, .9, 16), mat(0x8f603f), 0, .45, 0, g);
+  const greens = [0x4fa86e, 0x5bb37a, 0x67be86, 0x73c891, 0x7fd09b];
+  const T = [[2.35, 2.0, 1.6], [1.95, 1.8, 2.8], [1.55, 1.6, 3.85], [1.1, 1.4, 4.85], [.66, 1.1, 5.75]];
+  T.forEach(([r, h, cy], i) => {
+    mesh(new THREE.ConeGeometry(r, h, 40), mat(greens[i], { roughness:.85 }), 0, cy, 0, g);
+    const hemY = cy - h/2;
+    const sn = mesh(new THREE.TorusGeometry(r * .96, .09, 10, 48), mat(0xffffff, { roughness:.6 }), 0, hemY + .06, 0, g); sn.rotation.x = Math.PI/2;
+    // hanging ornaments around the hem
+    const n = Math.round(r * 5.6);
+    for (let k = 0; k < n; k++){
+      const a = k / n * Math.PI * 2 + i * .7, rr = r * .97;
+      hang(g, Math.cos(a)*rr, hemY + .02, Math.sin(a)*rr, .14 + (k % 3) * .1, ORN[(k + i) % ORN.length]);
+    }
+    // plush teddies sitting on the branches
+    const nb = i < 4 ? 2 : 0;
+    for (let k = 0; k < nb; k++){
+      const a = (k / nb) * Math.PI * 2 + .5 + i * 1.3, rr = r * .78, yy = hemY + h * .22;
+      const bear = teddy(Math.cos(a)*rr, yy, Math.sin(a)*rr, .44 - i*.04, Math.atan2(Math.cos(a), Math.sin(a)), g);
+      if ((k + i) % 2) bear.traverse(m => { if (m.material && m.material.color && m.material.color.getHex() === 0xf5a9bb) m.material = mat(0xffffff, { roughness:.95 }); });
+    }
   });
-  // spiral of fairy lights
-  for (let k = 0; k < 26; k++){
-    const t = k / 26, ty = .3 + t * 1.7, r = .9 * (1 - t) + .12, a = t * Math.PI * 7;
-    xPut(xG.bg, xG.bulb[k % xG.bulb.length], g, Math.cos(a)*r, ty, Math.sin(a)*r, .04);
-  }
-  const st = mesh(starGeo3, xG.star, 0, 2.16, 0, g); st.scale.setScalar(.17); xStars.push(st);
-  if (gifts){
-    const gc = [[C.hot, 0xffffff], [0xbfe3d0, C.hot], [0xffd36e, 0xff6f7d]];
-    gc.forEach(([c, rb], k) => {
-      const a = .6 + k * 1.15, gx = Math.cos(a) * .72, gz = Math.sin(a) * .72, sz = .26 + (k % 2) * .06;
-      const bx = mesh(box(sz, sz, sz, .03), mat(c), gx, sz/2, gz, g); bx.rotation.y = a;
-      const r1 = mesh(new THREE.BoxGeometry(sz + .01, sz + .01, .05), mat(rb), gx, sz/2, gz, g); r1.rotation.y = a;
-      const r2 = mesh(new THREE.BoxGeometry(.05, sz + .01, sz + .01), mat(rb), gx, sz/2, gz, g); r2.rotation.y = a;
-      mesh(xG.ball, mat(rb), gx, sz + .03, gz, g).scale.set(.07, .05, .07);
-    });
-  }
+  // pink ribbon garland spiralling down
+  const pts = []; for (let k = 0; k <= 160; k++){ const t = k / 160, y = .8 + t * 5.0, r = 2.3 * (1 - t) + .35 + .05, a = t * Math.PI * 8; pts.push(new THREE.Vector3(Math.cos(a)*r, y, Math.sin(a)*r)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 400, .055, 8, false), mat(0xff9fb0, { roughness:.4, metalness:.15 }), 0, 0, 0, g);
+  // fairy lights (instanced)
+  const bulbM = [0xffd27d, 0xffb2bb, 0xbfe3d0, 0xfff1c4].map(c => new THREE.MeshStandardMaterial({ color:0xfffbe8, emissive:c, emissiveIntensity:1.1 }));
+  const M4 = new THREE.Matrix4(), Q0 = new THREE.Quaternion(), V0 = new THREE.Vector3(), S0 = new THREE.Vector3(.05,.05,.05);
+  bulbM.forEach((bm, j) => {
+    const N = 45, im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), bm, N);
+    for (let k = 0; k < N; k++){ const t = (k * 4 + j) / (N * 4), y = .75 + t * 5.1, r = 2.35 * (1 - t) + .32, a = t * Math.PI * 8 + Math.PI; im.setMatrixAt(k, M4.compose(V0.set(Math.cos(a)*r, y, Math.sin(a)*r), Q0, S0)); }
+    g.add(im);
+  });
+  // big glowing star on top
+  const st = mesh(starGeo3, O.star, 0, 6.65, 0, g); st.scale.setScalar(.48); xStars.push(st);
+  // gifts & plushies around the base
+  const gc = [[C.hot, 0xffffff, .55], [0xbfe3d0, C.hot, .45], [0xffd36e, 0xff6f7d, .5], [0xc9b7ff, 0xffffff, .4], [0xffffff, C.hot, .5], [0xff8fa3, 0xffd36e, .38]];
+  gc.forEach(([c, rb, sz], k) => {
+    const a = -1.0 + k * .55, rr = 1.75 + (k % 2) * .35, gx = Math.cos(a)*rr, gz = Math.sin(a)*rr;
+    const bg = new THREE.Group(); bg.position.set(gx, 0, gz); bg.rotation.y = a + k; g.add(bg);
+    mesh(box(sz, sz, sz, .04), mat(c), 0, sz/2, 0, bg);
+    mesh(new THREE.BoxGeometry(sz + .01, sz + .01, .07), mat(rb), 0, sz/2, 0, bg); mesh(new THREE.BoxGeometry(.07, sz + .01, sz + .01), mat(rb), 0, sz/2, 0, bg);
+    for (const s of [-1, 1]){ const b = mesh(new THREE.TorusGeometry(.08, .03, 8, 16), mat(rb), s*.07, sz + .05, 0, bg); b.rotation.y = Math.PI/2; b.rotation.z = s*.5; }
+  });
+  teddy(1.2, 0, 1.75, .62, .9, g);                           // pink bear hugging the presents
+  const wb = teddy(2.05, 0, .55, .5, 1.5, g); wb.traverse(m => { if (m.material && m.material.color && m.material.color.getHex() === 0xf5a9bb) m.material = mat(0xffffff, { roughness:.95 }); });
   return g;
 }
-// outdoor ring (kept clear of the shop front, A-frame board, bench and the walking path)
-xmasTree(-8.0, 0.9, 1.55); xmasTree(-5.9, 8.5, 1.35); xmasTree(8.0, .2, 1.5);
-xmasTree(-4.2, -8.6, 1.6); xmasTree(0, -9.5, 1.3); xmasTree(4.2, -8.7, 1.65);
-xmasTree(-7.2, -6.2, 1.4); xmasTree(7.3, -6.3, 1.45);
-xmasTree(-9.8, -2.6, 1.1, 0, false); xmasTree(9.8, -3.4, 1.15, 0, false); xmasTree(-9.9, 3.2, 1.0, 0, false);
-// indoor trees: back-left corner next to the big bear, and back-right corner
-xmasTree(-4.45, -6.25, 1.25, .2); xmasTree(4.45, -5.9, 1.0, .2);
-{ const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), S = new THREE.Vector3();
-  xInst.forEach(({ geo, m, list }) => { const im = new THREE.InstancedMesh(geo, m, list.length); list.forEach(([x, y, z, sc], i) => im.setMatrixAt(i, M.compose(P.set(x, y, z), Q, S.set(sc, sc, sc)))); im.instanceMatrix.needsUpdate = true; scene.add(im); }); }
+grandTree(8.0, -3.4);
 
 /* ---------- day / night ---------- */
 const glowMats = [];
@@ -644,6 +681,7 @@ nLight(0xffe6c4, -.3, H + 1.3, FZ + 1.6, 6, 3.6);            // sign board
 nLight(0xffd9a8, -.5, 3.4, -3.2, 10, 11);                    // interior fill
 nLight(0xffd9a8, -1.6, 2.2, 1.2, 6, 5);                      // display case
 nLight(0xffe0b8, -4.6, 3.2, FZ + 3.6, 9, 7);                 // A-frame board & sidewalk
+nLight(0xffe2c0, 7.0, 4.5, 1.2, 12, 9);                      // grand tree
 // stars + moon
 const starGeo = new THREE.BufferGeometry(), sp3 = [];
 for (let i = 0; i < 500; i++){ const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI * .42; sp3.push(75*Math.sin(ph)*Math.cos(th), 75*Math.cos(ph) - 6, 75*Math.sin(ph)*Math.sin(th)); }
@@ -673,7 +711,7 @@ window.setNight = v => { nightTarget = night = v; dnBtn.innerHTML = v ? '☀️ 
 
 /* ---------- views ---------- */
 const VIEWS = {
-  out:  { pos:[10.5, 7, 16.5], tgt:[0, 2.0, -.5] },
+  out:  { pos:[11.6, 7.2, 16.6], tgt:[1.0, 2.2, -.6] },
   in:   { pos:[4.4, 3.1, -1.5], tgt:[-1.8, 1.4, -4.6] },
   case: { pos:[-0.55, 2.45, 2.75], tgt:[-1.75, 1.6, -.2] },
   menu: { pos:[2.75, 3.0, -2.6], tgt:[2.75, 3.0, -6.8] },
@@ -731,6 +769,7 @@ function frame(){
   hearts.forEach(h => { h.position.y += Math.sin(t*.8 + h.userData.p) * .004; h.rotation.y = t*.6 + h.userData.p; });
   animWalkers(t);
   xStars.forEach((st, i) => st.rotation.y = t * 1.2 + i);
+  swingers.forEach(pv => pv.rotation.z = Math.sin(t * 1.6 + pv.userData.p) * .12);
   if (Math.abs(night - nightTarget) > .001){ night += Math.sign(nightTarget - night) * Math.min(Math.abs(nightTarget - night), dt / 1.2); applyNight(night); }
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(frame);
